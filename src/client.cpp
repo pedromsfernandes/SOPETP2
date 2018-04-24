@@ -5,7 +5,7 @@ using namespace std;
 
 int usage(char *argv[])
 {
-    cout << "Usage: " << argv[0] << "<time_out> <num_wanted_seats> <pref_seat_list>" << endl;
+    cout << "Usage: " << argv[0] << " <time_out> <num_wanted_seats> <pref_seat_list>" << endl;
     return 1;
 }
 
