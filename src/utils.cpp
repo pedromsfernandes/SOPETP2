@@ -3,17 +3,53 @@
 
 using namespace std;
 
-bool isNumber(string str)
-{
-    for (char x : str)
-        if (!isdigit(x))
-            return false;
-
-    return true;
-}
-
 int invalidArguments()
 {
     cout << "Invalid arguments!" << endl;
     return 1;
+}
+
+bool isNumber(const string &str)
+{
+    for (auto x : str)
+    {
+        if (!isdigit(x))
+            return false;
+    }
+
+    try
+    {
+        stoi(str);
+    }
+    catch (invalid_argument)
+    {
+        return false;
+    }
+    catch (out_of_range)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+vector<string> splitList(const string &list)
+{
+    vector<string> split;
+    const string delim = " ";
+    size_t pos1 = 0, pos2 = 0;
+
+    while (true)
+    {
+        if ((pos2 = list.find(delim, pos1)) == string::npos)
+        {
+            split.push_back(list.substr(pos1, list.size() - pos1));
+            break;
+        }
+        else
+            split.push_back(list.substr(pos1, pos2 - pos1));
+
+        pos1 = pos2 + 1;
+    }
+    return split;
 }

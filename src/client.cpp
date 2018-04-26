@@ -13,12 +13,17 @@ int usage(char *argv[])
 
 vector<int> parseList(string list)
 {
-    istringstream str(list);
+    vector<string> split = splitList(list);
     vector<int> parsed;
     int value;
 
-    while (str >> value)
+    for (auto x : split)
+    {
+        if (!isNumber(x))
+            return vector<int>();
+
         parsed.push_back(value);
+    }
 
     return parsed;
 }
