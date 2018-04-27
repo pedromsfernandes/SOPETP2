@@ -1,7 +1,12 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <iostream>
-#include <sstream>
-#include "utils.h"
 #include <vector>
+#include "utils.h"
+#include "macros.h"
+#include <string.h>
 
 using namespace std;
 
@@ -15,14 +20,13 @@ vector<int> parseList(string list)
 {
     vector<string> split = splitList(list);
     vector<int> parsed;
-    int value;
 
     for (auto x : split)
-    {
+    {  
         if (!isNumber(x))
             return vector<int>();
 
-        parsed.push_back(value);
+        parsed.push_back(stoi(x));
     }
 
     return parsed;
@@ -43,6 +47,11 @@ int parseArguments(char *argv[], int &time_out, int &num_wanted_seats, vector<in
     return 0;
 }
 
+string FIFOname()
+{
+    return "ans" + to_string(getpid());
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 4)
@@ -53,6 +62,17 @@ int main(int argc, char *argv[])
 
     if (parseArguments(argv, time_out, num_wanted_seats, prefList) == 1)
         return invalidArguments();
+
+    //string fifo = FIFOname();
+    //mkfifo(fifo.c_str(), 0660);
+    //int fdAns = open(fifo.c_str(), O_RDONLY);
+    int fdRequest = open(REQUESTS, O_WRONLY);
+    write(fdRequest, &num_wanted_seats, sizeof(int));
+    int size = prefList.size();
+    write(fdRequest, &size, sizeof(int));
+    for(auto &x : prefList)
+        write(fdRequest, &x, sizeof(int));
+
 
     return 0;
 }

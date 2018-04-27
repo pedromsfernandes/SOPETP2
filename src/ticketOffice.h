@@ -1,10 +1,20 @@
 #ifndef _TICKET_OFFICE_H_
 #define _TICKET_OFFICE_H_
 
-typedef struct
+class Seat
 {
+  private:
+    int seatNum;
+    int clientId;
 
-} Seat;
+  public:
+    Seat(int seatNum);
+    bool isSeatFree() const;
+    void bookSeat(int clientId);
+    void freeSeat();
+    int getSeatNum() const;
+    int getClientId() const;
+};
 
 int isSeatFree(Seat *seats, int seatNum);
 
