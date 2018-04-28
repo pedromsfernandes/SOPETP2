@@ -6,8 +6,11 @@
 #include <vector>
 #include "utils.h"
 #include "macros.h"
+#include "logServer.h"
 
 using namespace std;
+
+ofstream slog;
 
 int usage(char *argv[])
 {
@@ -61,7 +64,7 @@ int main(int argc, char *argv[])
 
     mkfifo(REQUESTS, 0660);
     int fdRequests = open(REQUESTS, O_RDONLY);
-    
+
     int num_seats;
     int size;
     int seat;
@@ -70,12 +73,11 @@ int main(int argc, char *argv[])
     read(fdRequests, &num_seats, sizeof(int));
     read(fdRequests, &size, sizeof(int));
 
-    for(int i = 0; i< size; i++)
+    for (int i = 0; i < size; i++)
     {
-    read(fdRequests, &seat, sizeof(int));
-    seats.push_back(seat);
+        read(fdRequests, &seat, sizeof(int));
+        seats.push_back(seat);
     }
-
 
     close(fdRequests);
     return 0;

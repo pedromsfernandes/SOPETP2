@@ -10,4 +10,6 @@ int invalidArguments();
 
 bool isNumber(const std::string &str);
 
+std::string getCode(int motive);
+
 #endif /* _UTILS_H_ */

@@ -6,9 +6,12 @@
 #include <vector>
 #include "utils.h"
 #include "macros.h"
+#include "logClient.h"
 #include <string.h>
 
 using namespace std;
+
+ofstream clog;
 
 int usage(char *argv[])
 {
@@ -22,7 +25,7 @@ vector<int> parseList(string list)
     vector<int> parsed;
 
     for (auto x : split)
-    {  
+    {
         if (!isNumber(x))
             return vector<int>();
 
@@ -70,9 +73,8 @@ int main(int argc, char *argv[])
     write(fdRequest, &num_wanted_seats, sizeof(int));
     int size = prefList.size();
     write(fdRequest, &size, sizeof(int));
-    for(auto &x : prefList)
+    for (auto &x : prefList)
         write(fdRequest, &x, sizeof(int));
-
 
     return 0;
 }

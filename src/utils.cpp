@@ -53,3 +53,36 @@ vector<string> splitList(const string &list)
     }
     return split;
 }
+
+string getCode(int motive)
+{
+    string code;
+
+    switch (motive)
+    {
+    case -1:
+        code = "MAX";
+        break;
+    case -2:
+        code = "NST";
+        break;
+    case -3:
+        code = "IID";
+        break;
+    case -4:
+        code = "ERR";
+        break;
+    case -5:
+        code = "NAV";
+        break;
+    case -6:
+        code = "FUL";
+        break;
+    case -7:
+        code = "OUT";
+    default:
+        break;
+    }
+
+    return code;
+}

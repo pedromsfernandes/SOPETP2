@@ -8,7 +8,7 @@ Seat::Seat(int seatNum) : seatNum(seatNum)
 
 void Seat::bookSeat(int clientID)
 {
-    this->clientId = clientId;
+    this->clientId = clientID;
 }
 
 bool Seat::isSeatFree() const
@@ -33,7 +33,7 @@ int Seat::getSeatNum() const
 
 int isSeatFree(Seat *seats, int seatNum)
 {
-    int size = sizeof(seats) / sizeof(seats[0]);
+    unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {
@@ -51,7 +51,7 @@ int isSeatFree(Seat *seats, int seatNum)
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
-    int size = sizeof(seats) / sizeof(seats[0]);
+    unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {
@@ -65,7 +65,7 @@ void bookSeat(Seat *seats, int seatNum, int clientId)
 
 void freeSeat(Seat *seats, int seatNum)
 {
-    int size = sizeof(seats) / sizeof(seats[0]);
+    unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {

@@ -1,7 +1,10 @@
-#ifndef _LOG_H_
-#define _LOG_H_
+#ifndef _LOG_SERVER_H_
+#define _LOG_SERVER_H_
 
 #include <vector>
+#include <fstream>
+
+extern std::ofstream slog;
 
 void logTicketOfficeOpen(int ticketOfficeNum);
 
@@ -15,10 +18,7 @@ void logUnSuccessfulRequest(int ticketOfficeNum, int clientId, const std::vector
 
 void saveServerBookings(const std::vector<int> &bookSeats);
 
-void logSuccessfulRequestResult(int clientPID, const std::vector<int> &bookSeats);
+void logRequestData(int ticketOfficeNum, int clientId, const std::vector<int> &prefSeats,
+                    const std::vector<int> &bookSeats);
 
-void logUnSuccessfulRequestResult(int clientPID, int motive);
-
-void saveClientBookings(const std::vector<int> &bookSeats)
-
-#endif /* _LOG_H_ */
+#endif /* _LOG_SERVER_H_*/
