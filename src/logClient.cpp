@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void logSuccessfulRequestResult(int clientPID, const std::vector<int> &bookSeats)
+void logSuccessfulRequestResult(ostream &clog, int clientPID, const std::vector<int> &bookSeats)
 {
     int size = bookSeats.size();
 
@@ -19,14 +19,14 @@ void logSuccessfulRequestResult(int clientPID, const std::vector<int> &bookSeats
     }
 }
 
-void logUnSuccessfulRequestResult(int clientPID, int motive)
+void logUnSuccessfulRequestResult(ostream &clog, int clientPID, int motive)
 {
     clog << setw(5) << setfill('0') << clientPID << " ";
     clog << getCode(motive) << endl;
 }
 
-void saveClientBookings(const std::vector<int> &bookSeats)
+void saveClientBookings(ostream &cbook, const std::vector<int> &bookSeats)
 {
     for (auto x : bookSeats)
-        clog << setw(WIDTH_SEAT) << setfill('0') << x << endl;
+        cbook << setw(WIDTH_SEAT) << setfill('0') << x << endl;
 }

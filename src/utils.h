@@ -12,4 +12,6 @@ bool isNumber(const std::string &str);
 
 std::string getCode(int motive);
 
+std::string FIFOname(int pid);
+
 #endif /* _UTILS_H_ */

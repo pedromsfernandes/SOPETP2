@@ -65,11 +65,13 @@ int main(int argc, char *argv[])
     mkfifo(REQUESTS, 0660);
     int fdRequests = open(REQUESTS, O_RDONLY);
 
+    int clientPID;
     int num_seats;
     int size;
     int seat;
     vector<int> seats;
 
+    read(fdRequests, &clientPID, sizeof(int));
     read(fdRequests, &num_seats, sizeof(int));
     read(fdRequests, &size, sizeof(int));
 
@@ -80,5 +82,11 @@ int main(int argc, char *argv[])
     }
 
     close(fdRequests);
+
+    string fifo = FIFOname(clientPID);
+    int fdAns = open(fifo.c_str(), O_WRONLY);
+
+    sleep(60);
+
     return 0;
 }

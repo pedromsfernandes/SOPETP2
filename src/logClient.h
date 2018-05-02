@@ -4,12 +4,10 @@
 #include <vector>
 #include <fstream>
 
-extern std::ofstream clog;
+void logSuccessfulRequestResult(std::ostream &clog, int clientPID, const std::vector<int> &bookSeats);
 
-void logSuccessfulRequestResult(int clientPID, const std::vector<int> &bookSeats);
+void logUnSuccessfulRequestResult(std::ostream &clog, int clientPID, int motive);
 
-void logUnSuccessfulRequestResult(int clientPID, int motive);
-
-void saveClientBookings(const std::vector<int> &bookSeats);
+void saveClientBookings(std::ostream &cbook, const std::vector<int> &bookSeats);
 
 #endif /* _LOG_CLIENT_H_*/

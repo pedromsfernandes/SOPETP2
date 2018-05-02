@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <iostream>
 #include <vector>
 #include "utils.h"
@@ -11,7 +12,11 @@
 
 using namespace std;
 
-ofstream clog;
+void sigalarm_handler(int signum)
+{
+    cout << "Server took too long to respond\n";
+    exit(1);
+}
 
 int usage(char *argv[])
 {
@@ -50,11 +55,6 @@ int parseArguments(char *argv[], int &time_out, int &num_wanted_seats, vector<in
     return 0;
 }
 
-string FIFOname()
-{
-    return "ans" + to_string(getpid());
-}
-
 int main(int argc, char *argv[])
 {
     if (argc != 4)
@@ -66,15 +66,59 @@ int main(int argc, char *argv[])
     if (parseArguments(argv, time_out, num_wanted_seats, prefList) == 1)
         return invalidArguments();
 
-    //string fifo = FIFOname();
-    //mkfifo(fifo.c_str(), 0660);
-    //int fdAns = open(fifo.c_str(), O_RDONLY);
+    int pid = getpid();
+
+    string fifo = FIFOname(pid);
+    mkfifo(fifo.c_str(), 0660);
+
     int fdRequest = open(REQUESTS, O_WRONLY);
+
+    write(fdRequest, &pid, sizeof(int));
     write(fdRequest, &num_wanted_seats, sizeof(int));
+
     int size = prefList.size();
     write(fdRequest, &size, sizeof(int));
+
     for (auto &x : prefList)
         write(fdRequest, &x, sizeof(int));
+
+    int fdAns = open(fifo.c_str(), O_RDONLY);
+
+    int numSeats;
+
+    struct sigaction alarme;
+    alarme.sa_handler = sigalarm_handler;
+    sigemptyset(&alarme.sa_mask);
+    alarme.sa_flags = 0;
+
+    sigaction(SIGALRM, &alarme, NULL);
+
+    alarm(time_out);
+    read(fdAns, &numSeats, sizeof(int));
+    alarm(0);
+
+    ofstream clog(CLIENT_LOG, ios_base::app);
+
+    if (numSeats < 0)
+        logUnSuccessfulRequestResult(clog, pid, numSeats);
+
+    else
+    {
+        vector<int> seats;
+        int seatNum;
+
+        for (int i = 0; i < numSeats; i++)
+        {
+            read(fdAns, &seatNum, sizeof(int));
+            seats.push_back(seatNum);
+        }
+
+        logSuccessfulRequestResult(clog, numSeats, seats);
+
+        ofstream cbook(CLIENT_BOOK, ios_base::app);
+
+        saveClientBookings(cbook, seats);
+    }
 
     return 0;
 }
