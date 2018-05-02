@@ -63,6 +63,13 @@ int main(int argc, char *argv[])
         return invalidArguments();
 
     mkfifo(REQUESTS, 0660);
+
+    for (int i = 0; i < num_ticket_offices; i++)
+    {
+        pthread_t tid;
+        pthread_create(&tid, NULL, NULL, NULL);
+    }
+
     int fdRequests = open(REQUESTS, O_RDONLY);
 
     int clientPID;
