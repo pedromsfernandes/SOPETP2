@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "macros.h"
 #include "logServer.h"
+#include "ticketOffice.h"
 
 using namespace std;
 
@@ -52,6 +53,11 @@ int isRequestValid(int num_wanted_seats, int num_room_seats, vector<int> pref_se
     return 1;
 }
 
+void *thread_func(void *arg)
+{
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 4)
@@ -63,36 +69,46 @@ int main(int argc, char *argv[])
         return invalidArguments();
 
     mkfifo(REQUESTS, 0660);
+    vector<pthread_t> tid(num_ticket_offices);
 
     for (int i = 0; i < num_ticket_offices; i++)
     {
-        pthread_t tid;
-        pthread_create(&tid, NULL, NULL, NULL);
+        pthread_create(&tid.at(i), NULL, thread_func, NULL);
     }
 
     int fdRequests = open(REQUESTS, O_RDONLY);
 
-    int clientPID;
-    int num_seats;
-    int size;
-    int seat;
-    vector<int> seats;
+    Request req;
+    string fifo;
+    int num_seats, size, seat, fdAns;
+    pid_t clientPID;
+    vector<int> prefSeats;
+    Seat *seats = initSeats(num_room_seats);
 
-    read(fdRequests, &clientPID, sizeof(int));
-    read(fdRequests, &num_seats, sizeof(int));
-    read(fdRequests, &size, sizeof(int));
-
-    for (int i = 0; i < size; i++)
+    while (1)
     {
-        read(fdRequests, &seat, sizeof(int));
-        seats.push_back(seat);
+        fifo = FIFOname(clientPID);
+        fdAns = open(fifo.c_str(), O_WRONLY);
+
+        read(fdRequests, &clientPID, sizeof(int));
+        read(fdRequests, &num_seats, sizeof(int));
+        read(fdRequests, &size, sizeof(int));
+
+        for (int i = 0; i < size; i++)
+        {
+            read(fdRequests, &seat, sizeof(int));
+            prefSeats.push_back(seat);
+        }
+
+        req = Request(clientPID, num_seats, prefSeats);
+
+        //direcionar para threads
+
+        break;
     }
 
+    delete[] seats;
     close(fdRequests);
-
-    string fifo = FIFOname(clientPID);
-    int fdAns = open(fifo.c_str(), O_WRONLY);
-
     sleep(60);
 
     return 0;

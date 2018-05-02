@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     if (parseArguments(argv, time_out, num_wanted_seats, prefList) == 1)
         return invalidArguments();
 
-    int pid = getpid();
+    pid_t pid = getpid();
 
     string fifo = FIFOname(pid);
     mkfifo(fifo.c_str(), 0660);

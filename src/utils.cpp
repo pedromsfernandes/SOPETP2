@@ -87,7 +87,7 @@ string getCode(int motive)
     return code;
 }
 
-string FIFOname(int pid)
+string FIFOname(pid_t pid)
 {
     return "ans" + to_string(pid);
 }
