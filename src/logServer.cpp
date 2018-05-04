@@ -8,23 +8,29 @@ using namespace std;
 
 void logTicketOfficeOpen(int ticketOfficeNum)
 {
-    slog << setw(WIDTH_TO) << setfill('0') << ticketOfficeNum << "-OPEN" << endl;
+    slog << setw(WIDTH_TO) << setfill(FILL) << ticketOfficeNum << "-OPEN" << endl;
 }
 
 void logTicketOfficeClose(int ticketOfficeNum)
 {
-    slog << setw(WIDTH_TO) << setfill('0') << ticketOfficeNum << "-CLOSED" << endl;
+    slog << setw(WIDTH_TO) << setfill(FILL) << ticketOfficeNum << "-CLOSED" << endl;
 }
 
 void logRequestData(int ticketOfficeNum, pid_t clientPID, const std::vector<int> &prefSeats,
                     const std::vector<int> &bookSeats)
 {
-    slog << setw(WIDTH_TO) << setfill('0') << ticketOfficeNum << "-";
-    slog << setw(WIDTH_PID) << setfill('0') << clientPID << "-";
-    slog << setw(WIDTH_NT) << setfill('0') << bookSeats.size() << ": ";
+    slog << setw(WIDTH_TO) << setfill(FILL) << ticketOfficeNum << "-";
+    slog << setw(WIDTH_PID) << setfill(FILL) << clientPID << "-";
+    slog << setw(WIDTH_NT) << setfill(FILL) << bookSeats.size() << ": ";
 
-    for (auto x : prefSeats)
-        slog << setw(WIDTH_SEAT) << setfill('0') << x << " ";
+    int size = prefSeats.size();
+    for(int i = 0; i < MAX_CLI_SEATS; i++)
+    {
+        if(i < size)
+            slog  << setw(WIDTH_SEAT) << setfill(FILL) << prefSeats.at(i) << " ";
+        else
+            slog  << "     ";
+    }
 }
 
 /*
@@ -47,18 +53,24 @@ void logSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vecto
 void logUnSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vector<int> &seats,
                             int motive)
 {
-    slog << setw(WIDTH_TO) << setfill('0') << ticketOfficeNum << "-";
-    slog << setw(WIDTH_PID) << setfill('0') << clientPID << "-";
-    slog << setw(WIDTH_NT) << setfill('0') << seats.size() << ": ";
+    slog << setw(WIDTH_TO) << setfill(FILL) << ticketOfficeNum << "-";
+    slog << setw(WIDTH_PID) << setfill(FILL) << clientPID << "-";
+    slog << setw(WIDTH_NT) << setfill(FILL) << seats.size() << ": ";
 
-    for (auto x : seats)
-        slog << setw(WIDTH_SEAT) << setfill('0') << x << " ";
+    int size = seats.size();
+    for(int i = 0; i < MAX_CLI_SEATS; i++)
+    {
+        if(i < size)
+            slog  << setw(WIDTH_SEAT) << setfill(FILL) << seats.at(i) << " ";
+        else
+            slog  << "     ";
+    }
 
-    slog << getCode(motive) << endl;
+    slog << "- " << getCode(motive) << endl;
 }
 
 void saveServerBookings(const std::vector<int> &bookSeats)
 {
     for (auto x : bookSeats)
-        slog << setw(WIDTH_SEAT) << setfill('0') << x << endl;
+        slog << setw(WIDTH_SEAT) << setfill(FILL) << x << endl;
 }

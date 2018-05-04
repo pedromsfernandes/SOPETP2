@@ -12,6 +12,8 @@
 #define WIDTH_TO 2
 #define WIDTH_NT 2
 
+#define FILL '0'
+
 #define DELAY() (sleep(5)) // ???
 
 #define CLIENT_LOG "clog.txt"

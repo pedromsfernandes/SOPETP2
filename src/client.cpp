@@ -69,20 +69,49 @@ int main(int argc, char *argv[])
     pid_t pid = getpid();
 
     string fifo = FIFOname(pid);
-    mkfifo(fifo.c_str(), 0660);
+    if (mkfifo(fifo.c_str(), 0660) != 0)
+    {
+        perror("dedicated fifo:");
+        return -1;
+    }
+    int fdRequest;
+    if ((fdRequest = open(REQUESTS, O_WRONLY)) == -1)
+    {
+        perror("requests fifo:");
+        return -2;
+    }
 
-    int fdRequest = open(REQUESTS, O_WRONLY);
-
-    write(fdRequest, &pid, sizeof(int));
-    write(fdRequest, &num_wanted_seats, sizeof(int));
+    if (write(fdRequest, &pid, sizeof(int)) == -1)
+    {
+        perror("write:");
+        return -3;
+    }
+    if (write(fdRequest, &num_wanted_seats, sizeof(int)) == -1)
+    {
+        perror("write:");
+        return -3;
+    }
 
     int size = prefList.size();
-    write(fdRequest, &size, sizeof(int));
+    if (write(fdRequest, &size, sizeof(int)) == -1)
+    {
+        perror("write:");
+        return -3;
+    }
 
     for (auto &x : prefList)
-        write(fdRequest, &x, sizeof(int));
+        if (write(fdRequest, &x, sizeof(int)) == -1)
+        {
+            perror("write:");
+            return -3;
+        }
 
-    int fdAns = open(fifo.c_str(), O_RDONLY);
+    int fdAns;
+    if ((fdAns = open(fifo.c_str(), O_RDONLY)) == -1)
+    {
+        perror("dedicated fifo:");
+        return -1;
+    }
 
     int numSeats;
 
@@ -91,10 +120,18 @@ int main(int argc, char *argv[])
     sigemptyset(&alarme.sa_mask);
     alarme.sa_flags = 0;
 
-    sigaction(SIGALRM, &alarme, NULL);
+    if (sigaction(SIGALRM, &alarme, NULL) == -1)
+    {
+        perror("sigaction:");
+        return -4;
+    }
 
     alarm(time_out);
-    read(fdAns, &numSeats, sizeof(int));
+    if (read(fdAns, &numSeats, sizeof(int)) == -1)
+    {
+        perror("read:");
+        return -3;
+    }
     alarm(0);
 
     ofstream clog(CLIENT_LOG, ios_base::app);
@@ -109,7 +146,11 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i < numSeats; i++)
         {
-            read(fdAns, &seatNum, sizeof(int));
+            if (read(fdAns, &seatNum, sizeof(int)) == -1)
+            {
+                perror("read:");
+                return -3;
+            }
             seats.push_back(seatNum);
         }
 
