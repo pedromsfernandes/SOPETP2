@@ -22,4 +22,6 @@
 #define SERVER_LOG "slog.txt"
 #define REQUESTS "requests"
 
+#define SHARED 0
+
 #endif /* _MACROS_H_ */

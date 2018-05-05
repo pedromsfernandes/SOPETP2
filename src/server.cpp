@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <semaphore.h>
 #include <fcntl.h>
 #include <iostream>
 #include <vector>
@@ -10,6 +11,9 @@
 #include "ticketOffice.h"
 
 using namespace std;
+
+sem_t empty, full;
+Request req;
 
 ofstream slog;
 vector<pthread_t> tid;
@@ -75,12 +79,6 @@ int main(int argc, char *argv[])
     if (parseArguments(argv, num_room_seats, num_ticket_offices, open_time) == 1)
         return invalidArguments();
 
-    if (mkfifo(REQUESTS, 0660) != 0)
-    {
-        perror("requests fifo:");
-        return -1;
-    }
-
     struct sigaction alarme;
     alarme.sa_handler = sigalarm_handler;
     sigemptyset(&alarme.sa_mask);
@@ -93,6 +91,13 @@ int main(int argc, char *argv[])
     }
 
     alarm(open_time);
+
+    if (mkfifo(REQUESTS, 0660) != 0)
+    {
+        perror("requests fifo:");
+        return -1;
+    }
+
     tid = vector<pthread_t>(num_ticket_offices);
     for (int i = 0; i < num_ticket_offices; i++)
     {
@@ -103,6 +108,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (sem_init(&empty, SHARED, 1) != 0 || sem_init(&full, SHARED, 0) != 0)
+    {
+        perror("sem_init:");
+        return -5;
+    }
+
     int fdRequests;
     if ((fdRequests = open(REQUESTS, O_RDONLY)) == -1)
     {
@@ -110,7 +121,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    Request req;
     string fifo;
     int num_seats, size, seat, fdAns;
     pid_t clientPID;
