@@ -12,8 +12,10 @@
 
 using namespace std;
 
-sem_t empty, full;
-Request req;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+Request *req = NULL;
 
 ofstream slog;
 vector<pthread_t> tid;
@@ -66,6 +68,18 @@ int isRequestValid(int num_wanted_seats, int num_room_seats, vector<int> pref_se
 
 void *thread_func(void *arg)
 {
+    Request *a_tratar;
+
+    pthread_mutex_lock(&mutex);
+    while (req == NULL)
+        pthread_cond_wait(&cond, &mutex);
+
+    a_tratar = req;
+
+    pthread_mutex_unlock(&mutex);
+
+    //Tratar request
+
     return NULL;
 }
 
@@ -98,6 +112,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    Seat *seats = initSeats(num_room_seats);
+
     tid = vector<pthread_t>(num_ticket_offices);
     for (int i = 0; i < num_ticket_offices; i++)
     {
@@ -106,12 +122,6 @@ int main(int argc, char *argv[])
             perror("pthread_create:");
             return -2;
         }
-    }
-
-    if (sem_init(&empty, SHARED, 1) != 0 || sem_init(&full, SHARED, 0) != 0)
-    {
-        perror("sem_init:");
-        return -5;
     }
 
     int fdRequests;
@@ -125,13 +135,9 @@ int main(int argc, char *argv[])
     int num_seats, size, seat, fdAns;
     pid_t clientPID;
     vector<int> prefSeats;
-    Seat *seats = initSeats(num_room_seats);
 
     while (1)
     {
-        fifo = FIFOname(clientPID);
-        fdAns = open(fifo.c_str(), O_WRONLY);
-
         if (read(fdRequests, &clientPID, sizeof(int)) == -1)
         {
             perror("read:");
@@ -160,9 +166,17 @@ int main(int argc, char *argv[])
             prefSeats.push_back(seat);
         }
 
-        req = Request(clientPID, num_seats, prefSeats);
+        //Provavelmente passar estas duas chamadas para a thread, not sure
+        fifo = FIFOname(clientPID);
+        fdAns = open(fifo.c_str(), O_WRONLY);
 
-        //direcionar para threads
+        Request *temp_req = new Request(clientPID, num_seats, prefSeats);
+
+        pthread_mutex_lock(&mutex);
+        req = temp_req;
+
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mutex);
 
         break;
     }
