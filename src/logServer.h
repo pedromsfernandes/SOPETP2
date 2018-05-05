@@ -1,9 +1,9 @@
 #ifndef _LOG_SERVER_H_
 #define _LOG_SERVER_H_
 
+#include <sys/types.h>
 #include <vector>
 #include <fstream>
-#include <sys/types.h>
 
 extern std::ofstream slog;
 

@@ -3,7 +3,6 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <iostream>
-#include <thread>
 #include <vector>
 #include "utils.h"
 #include "macros.h"

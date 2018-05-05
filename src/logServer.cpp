@@ -1,8 +1,8 @@
+#include <iomanip>
+#include <string>
 #include "logServer.h"
 #include "macros.h"
 #include "utils.h"
-#include <iomanip>
-#include <string>
 
 using namespace std;
 
@@ -24,18 +24,16 @@ void logRequestData(int ticketOfficeNum, pid_t clientPID, const std::vector<int>
     slog << setw(WIDTH_NT) << setfill(FILL) << bookSeats.size() << ": ";
 
     int size = prefSeats.size();
-    for(int i = 0; i < MAX_CLI_SEATS; i++)
+    for (int i = 0; i < MAX_CLI_SEATS; i++)
     {
-        if(i < size)
-            slog  << setw(WIDTH_SEAT) << setfill(FILL) << prefSeats.at(i) << " ";
+        if (i < size)
+            slog << setw(WIDTH_SEAT) << setfill(FILL) << prefSeats.at(i) << " ";
         else
-            slog  << "     ";
+            for (int j = 0; j <= WIDTH_SEAT; j++)
+                slog << " ";
     }
 }
 
-/*
-FALTA TRATAR DA LARGURA DOS LUGARES
-*/
 void logSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vector<int> &prefSeats,
                           const std::vector<int> &bookSeats)
 {
@@ -45,7 +43,7 @@ void logSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vecto
     slog << "- ";
 
     for (auto x : bookSeats)
-        slog << setw(WIDTH_SEAT) << setfill('0') << x << " ";
+        slog << setw(WIDTH_SEAT) << setfill(FILL) << x << " ";
 
     slog << endl;
 }
@@ -58,12 +56,13 @@ void logUnSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vec
     slog << setw(WIDTH_NT) << setfill(FILL) << seats.size() << ": ";
 
     int size = seats.size();
-    for(int i = 0; i < MAX_CLI_SEATS; i++)
+    for (int i = 0; i < MAX_CLI_SEATS; i++)
     {
-        if(i < size)
-            slog  << setw(WIDTH_SEAT) << setfill(FILL) << seats.at(i) << " ";
+        if (i < size)
+            slog << setw(WIDTH_SEAT) << setfill(FILL) << seats.at(i) << " ";
         else
-            slog  << "     ";
+            for (int j = 0; j <= WIDTH_SEAT; j++)
+                slog << " ";
     }
 
     slog << "- " << getCode(motive) << endl;

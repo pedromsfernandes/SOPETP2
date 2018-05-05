@@ -3,12 +3,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include <iostream>
 #include <vector>
 #include "utils.h"
 #include "macros.h"
 #include "logClient.h"
-#include <string.h>
 
 using namespace std;
 
