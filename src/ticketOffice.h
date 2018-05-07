@@ -30,6 +30,9 @@ private:
 public:
   Request();
   Request(pid_t clientPID, int num_wanted_seats, std::vector<int> prefSeats);
+  pid_t getClientPID() const;
+  int getNumWantedSeats() const;
+  std::vector<int> getPrefSeats() const;
 };
 
 Seat *initSeats(int num_seats);

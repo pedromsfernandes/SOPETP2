@@ -54,9 +54,24 @@ Request::Request(pid_t clientPID, int num_wanted_seats, vector<int> prefSeats)
     this->prefSeats = prefSeats;
 }
 
+pid_t Request::getClientPID() const
+{
+    return clientPID;
+}
+
+int Request::getNumWantedSeats() const
+{
+    return num_wanted_seats;
+}
+
+std::vector<int> Request::getPrefSeats() const
+{
+    return prefSeats;
+}
+
 int isSeatFree(Seat *seats, int seatNum)
 {
-    unsigned int size = sizeof(seats) / sizeof(seats[0]);
+    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {
@@ -67,15 +82,17 @@ int isSeatFree(Seat *seats, int seatNum)
 
             break;
         }
-    }
+    }*/
 
     //DELAY();
-    return 0;
+    //return 0;
+
+    return ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->isSeatFree();
 }
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
-    unsigned int size = sizeof(seats) / sizeof(seats[0]);
+    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {
@@ -84,14 +101,16 @@ void bookSeat(Seat *seats, int seatNum, int clientId)
             seats[i].bookSeat(clientId);
             break;
         }
-    }
+    }*/
 
     //DELAY();
+
+    ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->bookSeat(clientId);
 }
 
 void freeSeat(Seat *seats, int seatNum)
 {
-    unsigned int size = sizeof(seats) / sizeof(seats[0]);
+    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
 
     for (unsigned int i = 0; i < size; i++)
     {
@@ -100,9 +119,11 @@ void freeSeat(Seat *seats, int seatNum)
             seats[i].freeSeat();
             break;
         }
-    }
+    }*/
 
     //DELAY();
+
+    ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->freeSeat();
 }
 
 Seat *initSeats(int num_seats)

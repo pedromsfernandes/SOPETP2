@@ -12,6 +12,8 @@
 
 using namespace std;
 
+Seat *seats;
+
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -66,20 +68,81 @@ int isRequestValid(int num_wanted_seats, int num_room_seats, vector<int> pref_se
     return 1;
 }
 
+int verifyRequest(Request *request)
+{
+    int seats_wanted = request->getNumWantedSeats();
+    vector<int> prefSeats = request->getPrefSeats();
+
+    if (seats_wanted > MAX_CLI_SEATS)
+        return -1;
+
+    if (prefSeats.size() > MAX_CLI_SEATS || prefSeats.size() < seats_wanted)
+        return -2;
+
+    //CHECKAR OUTROS ERROS
+}
+
 void *thread_func(void *arg)
 {
     Request *a_tratar;
+    pid_t clientPID;
+    int fdAns, seats_wanted, seats_taken;
+    vector<int> prefSeats, atrSeats;
+    string fifo;
 
-    pthread_mutex_lock(&mutex);
-    while (req == NULL)
-        pthread_cond_wait(&cond, &mutex);
+    while (1)
+    {
+        pthread_mutex_lock(&mutex);
+        while (req == NULL)
+            pthread_cond_wait(&cond, &mutex);
 
-    a_tratar = req;
+        a_tratar = req;
+        req = NULL;
 
-    pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&mutex);
 
-    //Tratar request
+        fifo = FIFOname(clientPID);
+        fdAns = open(fifo.c_str(), O_WRONLY);
 
+        if (verifyRequest(a_tratar) < 0)
+        {
+            //DAR LOG ERRO E ENVIAR RESPOSTA
+            delete a_tratar;
+        }
+
+        clientPID = a_tratar->getClientPID();
+        seats_wanted = a_tratar->getNumWantedSeats();
+        prefSeats = a_tratar->getPrefSeats();
+
+        for (int i = 0; i < prefSeats.size() && seats_taken < seats_wanted; i++)
+        {
+            if (isSeatFree(seats, prefSeats[i]))
+            {
+                bookSeat(seats, prefSeats[i], clientPID);
+                seats_taken++;
+                atrSeats.push_back(prefSeats[i]);
+            }
+        }
+
+        //FAIL
+        if (seats_taken < seats_wanted)
+        {
+            for (int i = 0; i < atrSeats.size(); i++)
+            {
+                freeSeat(seats, atrSeats[i]);
+            }
+
+            //DAR LOG E ENVIAR RESPOSTA
+        }
+
+        //WIN
+        else
+        {
+        }
+
+        atrSeats.clear();
+        delete a_tratar;
+    }
     return NULL;
 }
 
@@ -112,7 +175,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    Seat *seats = initSeats(num_room_seats);
+    seats = initSeats(num_room_seats);
 
     tid = vector<pthread_t>(num_ticket_offices);
     for (int i = 0; i < num_ticket_offices; i++)
@@ -131,8 +194,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    string fifo;
-    int num_seats, size, seat, fdAns;
+    int num_seats, size, seat;
     pid_t clientPID;
     vector<int> prefSeats;
 
@@ -165,10 +227,6 @@ int main(int argc, char *argv[])
             }
             prefSeats.push_back(seat);
         }
-
-        //Provavelmente passar estas duas chamadas para a thread, not sure
-        fifo = FIFOname(clientPID);
-        fdAns = open(fifo.c_str(), O_WRONLY);
 
         Request *temp_req = new Request(clientPID, num_seats, prefSeats);
 
