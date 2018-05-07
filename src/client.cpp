@@ -161,5 +161,8 @@ int main(int argc, char *argv[])
         saveClientBookings(cbook, seats);
     }
 
+    close(fdAns);
+    unlink(fifo.c_str());
+
     return 0;
 }

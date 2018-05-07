@@ -13,6 +13,8 @@
 using namespace std;
 
 Seat *seats;
+int num_room_seats;
+int num_seats_taken;
 
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -46,44 +48,30 @@ int parseArguments(char *argv[], int &num_room_seats, int &num_ticket_offices, i
     return 0;
 }
 
-int isRequestValid(int num_wanted_seats, int num_room_seats, vector<int> pref_seats)
+int verifyRequest(Request *request)
 {
-    if (!(num_wanted_seats >= 1 && num_wanted_seats <= MAX_CLI_SEATS))
+    unsigned int seats_wanted = request->getNumWantedSeats();
+    vector<int> prefSeats = request->getPrefSeats();
+
+    if (seats_wanted < 1 || seats_wanted > MAX_CLI_SEATS)
         return -1;
 
-    int size = pref_seats.size();
-    int value = 0;
-
-    if (!(size >= num_wanted_seats && size <= MAX_CLI_SEATS))
+    if (prefSeats.size() < seats_wanted || prefSeats.size() > MAX_CLI_SEATS)
         return -2;
 
-    for (int i = 0; i < size; i++)
+    for (unsigned int i = 0; i < prefSeats.size(); i++)
     {
-        value = pref_seats.at(i);
-
-        if (!(value >= 1 && value <= num_room_seats))
+        if (prefSeats[i] < 1 || prefSeats[i] > num_room_seats)
             return -3;
     }
 
-    return 1;
-}
-
-int verifyRequest(Request *request)
-{
-    int seats_wanted = request->getNumWantedSeats();
-    vector<int> prefSeats = request->getPrefSeats();
-
-    if (seats_wanted > MAX_CLI_SEATS)
-        return -1;
-
-    if (prefSeats.size() > MAX_CLI_SEATS || prefSeats.size() < seats_wanted)
-        return -2;
-
-    //CHECKAR OUTROS ERROS
+    return 0;
 }
 
 void *thread_func(void *arg)
 {
+    int bilhID = *((int *)arg);
+    logTicketOfficeOpen(bilhID);
     Request *a_tratar;
     pid_t clientPID;
     int fdAns, seats_wanted, seats_taken;
@@ -104,45 +92,62 @@ void *thread_func(void *arg)
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
 
-        if (verifyRequest(a_tratar) < 0)
-        {
-            //DAR LOG ERRO E ENVIAR RESPOSTA
-            delete a_tratar;
-        }
-
         clientPID = a_tratar->getClientPID();
         seats_wanted = a_tratar->getNumWantedSeats();
         prefSeats = a_tratar->getPrefSeats();
+        int error;
 
-        for (int i = 0; i < prefSeats.size() && seats_taken < seats_wanted; i++)
+        if ((error = verifyRequest(a_tratar)) < 0)
+        {
+            logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
+            write(fdAns, &error, sizeof(int));
+
+            close(fdAns);
+            delete a_tratar;
+            continue;
+        }
+
+        for (unsigned int i = 0; i < prefSeats.size() && seats_taken < seats_wanted; i++)
         {
             if (isSeatFree(seats, prefSeats[i]))
             {
                 bookSeat(seats, prefSeats[i], clientPID);
                 seats_taken++;
+                num_seats_taken++;
                 atrSeats.push_back(prefSeats[i]);
             }
         }
 
-        //FAIL
         if (seats_taken < seats_wanted)
         {
-            for (int i = 0; i < atrSeats.size(); i++)
+            for (unsigned int i = 0; i < atrSeats.size(); i++)
             {
                 freeSeat(seats, atrSeats[i]);
+                num_seats_taken--;
             }
 
-            //DAR LOG E ENVIAR RESPOSTA
+            error = -5;
+
+            logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
+            write(fdAns, &error, sizeof(int));
         }
 
-        //WIN
         else
         {
+            logSuccessfulRequest(bilhID, clientPID, prefSeats, atrSeats);
+            write(fdAns, &seats_wanted, sizeof(int));
+
+            for (unsigned int i = 0; i < atrSeats.size(); i++)
+                write(fdAns, &atrSeats[i], sizeof(int));
         }
 
+        close(fdAns);
         atrSeats.clear();
         delete a_tratar;
     }
+
+    logTicketOfficeClose(bilhID);
+    delete (int *)arg;
     return NULL;
 }
 
@@ -151,7 +156,7 @@ int main(int argc, char *argv[])
     if (argc != 4)
         return usage(argv);
 
-    int num_room_seats, num_ticket_offices, open_time;
+    int num_ticket_offices, open_time;
 
     if (parseArguments(argv, num_room_seats, num_ticket_offices, open_time) == 1)
         return invalidArguments();
@@ -175,12 +180,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    slog.open(SERVER_LOG, ios::trunc);
+
     seats = initSeats(num_room_seats);
 
     tid = vector<pthread_t>(num_ticket_offices);
     for (int i = 0; i < num_ticket_offices; i++)
     {
-        if (pthread_create(&tid.at(i), NULL, thread_func, NULL) != 0)
+        int *arg = new int;
+        *arg = (i + 1);
+        if (pthread_create(&tid.at(i), NULL, thread_func, arg) != 0)
         {
             perror("pthread_create:");
             return -2;
@@ -241,6 +250,8 @@ int main(int argc, char *argv[])
 
     delete[] seats;
     close(fdRequests);
+    unlink(REQUESTS);
+    slog.close();
     sleep(60);
 
     return 0;
