@@ -68,8 +68,11 @@ void logUnSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vec
     slog << "- " << getCode(motive) << endl;
 }
 
-void saveServerBookings(const std::vector<int> &bookSeats)
+void logBookedSeats(Seat *seats, int num_seats)
 {
-    for (auto x : bookSeats)
-        slog << setw(WIDTH_SEAT) << setfill(FILL) << x << endl;
+    for (int i = 0; i < num_seats; i++)
+    {
+        if (seats[i].getClientId())
+            sbook << setw(WIDTH_SEAT) << setfill(FILL) << seats[i].getSeatNum() << endl;
+    }
 }

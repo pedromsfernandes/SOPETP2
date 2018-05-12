@@ -4,8 +4,10 @@
 #include <sys/types.h>
 #include <vector>
 #include <fstream>
+#include "ticketOffice.h"
 
 extern std::ofstream slog;
+extern std::ofstream sbook;
 
 void logTicketOfficeOpen(int ticketOfficeNum);
 
@@ -17,9 +19,9 @@ void logSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vecto
 void logUnSuccessfulRequest(int ticketOfficeNum, pid_t clientPID, const std::vector<int> &seats,
                             int motive);
 
-void saveServerBookings(const std::vector<int> &bookSeats);
-
 void logRequestData(int ticketOfficeNum, pid_t clientPID, const std::vector<int> &prefSeats,
                     const std::vector<int> &bookSeats);
+
+void logBookedSeats(Seat *seats, int num_seats);
 
 #endif /* _LOG_SERVER_H_*/

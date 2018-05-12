@@ -25,12 +25,13 @@ pthread_mutex_t logfile_mutex = PTHREAD_MUTEX_INITIALIZER;
 Request *req = NULL;
 
 ofstream slog;
-vector<pthread_t> tid;
+ofstream sbook;
+
+bool timeout = false;
 
 void sigalarm_handler(int signum)
 {
-    //enviar sinal as threads para terminarem
-    exit(1);
+    timeout = true;
 }
 
 int usage(char *argv[])
@@ -86,11 +87,14 @@ void *thread_func(void *arg)
     vector<int> prefSeats, atrSeats;
     string fifo;
 
-    while (1)
+    while (!timeout)
     {
         pthread_mutex_lock(&request_mutex);
-        while (req == NULL)
+        while (req == NULL && !timeout)
             pthread_cond_wait(&request_cond, &request_mutex);
+
+        if (timeout)
+            break;
 
         a_tratar = req;
         req = NULL;
@@ -107,7 +111,9 @@ void *thread_func(void *arg)
 
         if ((error = verifyRequest(a_tratar)) < 0)
         {
+            pthread_mutex_lock(&logfile_mutex);
             logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
+            pthread_mutex_unlock(&logfile_mutex);
             write(fdAns, &error, sizeof(int));
 
             close(fdAns);
@@ -136,13 +142,19 @@ void *thread_func(void *arg)
 
             error = -5;
 
+            pthread_mutex_lock(&logfile_mutex);
             logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
+            pthread_mutex_unlock(&logfile_mutex);
+
             write(fdAns, &error, sizeof(int));
         }
 
         else
         {
+            pthread_mutex_lock(&logfile_mutex);
             logSuccessfulRequest(bilhID, clientPID, prefSeats, atrSeats);
+            pthread_mutex_unlock(&logfile_mutex);
+
             write(fdAns, &seats_wanted, sizeof(int));
 
             for (unsigned int i = 0; i < atrSeats.size(); i++)
@@ -192,7 +204,7 @@ int main(int argc, char *argv[])
 
     seats = initSeats(num_room_seats);
 
-    tid = vector<pthread_t>(num_ticket_offices);
+    vector<pthread_t> tid = vector<pthread_t>(num_ticket_offices);
     for (int i = 0; i < num_ticket_offices; i++)
     {
         int *arg = new int;
@@ -215,7 +227,7 @@ int main(int argc, char *argv[])
     pid_t clientPID;
     vector<int> prefSeats;
 
-    while (1)
+    while (!timeout)
     {
         if (read(fdRequests, &clientPID, sizeof(int)) == -1)
         {
@@ -252,15 +264,28 @@ int main(int argc, char *argv[])
 
         pthread_cond_signal(&request_cond);
         pthread_mutex_unlock(&request_mutex);
-
-        break;
     }
 
-    delete[] seats;
+    pthread_cond_broadcast(&request_cond);
+
+    for (int i = 0; i < num_ticket_offices; i++)
+    {
+        pthread_join(tid[i], NULL);
+    }
+
+    if (req != NULL)
+        delete req;
     close(fdRequests);
     unlink(REQUESTS);
+
+    slog << "SERVER CLOSED\n";
     slog.close();
-    sleep(60);
+
+    sbook.open(SERVER_BOOK, ios::trunc);
+    logBookedSeats(seats, num_room_seats);
+    sbook.close();
+
+    delete[] seats;
 
     return 0;
 }
