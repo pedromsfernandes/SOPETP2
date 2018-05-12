@@ -3,17 +3,19 @@
 
 #include <sys/types.h>
 #include <vector>
+#include <pthread.h>
 
 class Seat
 {
 private:
   int seatNum;
   int clientId;
+  pthread_mutex_t seatMutex;
 
 public:
   Seat();
   Seat(int seatNum);
-  bool isSeatFree() const;
+  bool isSeatFree();
   void bookSeat(int clientId);
   void freeSeat();
   int getSeatNum() const;

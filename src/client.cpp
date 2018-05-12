@@ -12,8 +12,13 @@
 
 using namespace std;
 
+int fdAns;
+string fifo;
+
 void sigalarm_handler(int signum)
 {
+    close(fdAns);
+    unlink(fifo.c_str());
     cout << "Server took too long to respond\n";
     exit(1);
 }
@@ -68,7 +73,7 @@ int main(int argc, char *argv[])
 
     pid_t pid = getpid();
 
-    string fifo = FIFOname(pid);
+    fifo = FIFOname(pid);
     if (mkfifo(fifo.c_str(), 0660) != 0)
     {
         perror("dedicated fifo:");
@@ -106,7 +111,6 @@ int main(int argc, char *argv[])
             return -3;
         }
 
-    int fdAns;
     if ((fdAns = open(fifo.c_str(), O_RDONLY)) == -1)
     {
         perror("dedicated fifo:");

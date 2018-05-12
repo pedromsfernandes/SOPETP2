@@ -8,26 +8,41 @@ Seat::Seat()
 {
     clientId = 0;
     seatNum = 0;
+    seatMutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
 Seat::Seat(int seatNum) : seatNum(seatNum)
 {
     clientId = 0;
+    seatMutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
 void Seat::bookSeat(int clientID)
 {
     this->clientId = clientID;
+    DELAY();
+    pthread_mutex_unlock(&seatMutex);
 }
 
-bool Seat::isSeatFree() const
+bool Seat::isSeatFree()
 {
-    return clientId == 0;
+    pthread_mutex_lock(&seatMutex);
+    if (clientId)
+    {
+        DELAY();
+        pthread_mutex_unlock(&seatMutex);
+        return false;
+    }
+    DELAY();
+    return true;
 }
 
 void Seat::freeSeat()
 {
+    pthread_mutex_lock(&seatMutex);
     clientId = 0;
+    DELAY();
+    pthread_mutex_unlock(&seatMutex);
 }
 
 int Seat::getClientId() const
@@ -71,58 +86,16 @@ std::vector<int> Request::getPrefSeats() const
 
 int isSeatFree(Seat *seats, int seatNum)
 {
-    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
-
-    for (unsigned int i = 0; i < size; i++)
-    {
-        if (seats[i].getSeatNum() == seatNum)
-        {
-            if (seats[i].isSeatFree())
-                return 1;
-
-            break;
-        }
-    }*/
-
-    //DELAY();
-    //return 0;
-
     return ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->isSeatFree();
 }
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
-    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
-
-    for (unsigned int i = 0; i < size; i++)
-    {
-        if (seats[i].getSeatNum() == seatNum)
-        {
-            seats[i].bookSeat(clientId);
-            break;
-        }
-    }*/
-
-    //DELAY();
-
     ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->bookSeat(clientId);
 }
 
 void freeSeat(Seat *seats, int seatNum)
 {
-    /*unsigned int size = sizeof(seats) / sizeof(seats[0]);
-
-    for (unsigned int i = 0; i < size; i++)
-    {
-        if (seats[i].getSeatNum() == seatNum)
-        {
-            seats[i].freeSeat();
-            break;
-        }
-    }*/
-
-    //DELAY();
-
     ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->freeSeat();
 }
 

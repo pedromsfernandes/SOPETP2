@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <pthread.h>
 #include <signal.h>
 #include <semaphore.h>
 #include <fcntl.h>
@@ -14,10 +15,12 @@ using namespace std;
 
 Seat *seats;
 int num_room_seats;
-int num_seats_taken;
+int num_seats_taken = 0;
 
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t request_cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t request_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_mutex_t logfile_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Request *req = NULL;
 
@@ -65,13 +68,18 @@ int verifyRequest(Request *request)
             return -3;
     }
 
+    if (num_room_seats == num_seats_taken)
+        return -6;
+
     return 0;
 }
 
 void *thread_func(void *arg)
 {
+    pthread_mutex_lock(&logfile_mutex);
     int bilhID = *((int *)arg);
     logTicketOfficeOpen(bilhID);
+    pthread_mutex_unlock(&logfile_mutex);
     Request *a_tratar;
     pid_t clientPID;
     int fdAns, seats_wanted, seats_taken;
@@ -80,14 +88,14 @@ void *thread_func(void *arg)
 
     while (1)
     {
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&request_mutex);
         while (req == NULL)
-            pthread_cond_wait(&cond, &mutex);
+            pthread_cond_wait(&request_cond, &request_mutex);
 
         a_tratar = req;
         req = NULL;
 
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&request_mutex);
 
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
@@ -239,11 +247,11 @@ int main(int argc, char *argv[])
 
         Request *temp_req = new Request(clientPID, num_seats, prefSeats);
 
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&request_mutex);
         req = temp_req;
 
-        pthread_cond_signal(&cond);
-        pthread_mutex_unlock(&mutex);
+        pthread_cond_signal(&request_cond);
+        pthread_mutex_unlock(&request_mutex);
 
         break;
     }
