@@ -94,7 +94,10 @@ void *thread_func(void *arg)
             pthread_cond_wait(&request_cond, &request_mutex);
 
         if (timeout)
+        {
+            pthread_mutex_unlock(&request_mutex);
             break;
+        }
 
         a_tratar = req;
         req = NULL;
@@ -194,11 +197,7 @@ int main(int argc, char *argv[])
 
     alarm(open_time);
 
-    if (mkfifo(REQUESTS, 0660) != 0)
-    {
-        perror("requests fifo:");
-        return -1;
-    }
+    mkfifo(REQUESTS, 0660);
 
     slog.open(SERVER_LOG, ios::trunc);
 
@@ -217,11 +216,7 @@ int main(int argc, char *argv[])
     }
 
     int fdRequests;
-    if ((fdRequests = open(REQUESTS, O_RDONLY)) == -1)
-    {
-        perror("requests fifo:");
-        return -1;
-    }
+    fdRequests = open(REQUESTS, O_RDONLY);
 
     int num_seats, size, seat;
     pid_t clientPID;

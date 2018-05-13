@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include "ticketOffice.h"
 #include "macros.h"
+#include <iostream>
 
 using namespace std;
 
