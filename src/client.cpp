@@ -137,7 +137,6 @@ int main(int argc, char *argv[])
         perror("read:");
         return -3;
     }
-    cout << "depois do read" << endl;
     alarm(0);
 
     ofstream clog(CLIENT_LOG, ios_base::app);
@@ -160,7 +159,7 @@ int main(int argc, char *argv[])
             seats.push_back(seatNum);
         }
 
-        logSuccessfulRequestResult(clog, numSeats, seats);
+        logSuccessfulRequestResult(clog, pid, seats);
 
         ofstream cbook(CLIENT_BOOK, ios_base::app);
 

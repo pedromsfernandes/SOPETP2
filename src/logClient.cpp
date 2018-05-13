@@ -13,7 +13,7 @@ void logSuccessfulRequestResult(ostream &clog, pid_t clientPID, const std::vecto
     for (int i = 0; i < size; i++)
     {
         clog << setw(WIDTH_PID) << setfill(FILL) << clientPID << " ";
-        clog << setw(WIDTH_XXNN / 2) << setfill(FILL) << i << ".";
+        clog << setw(WIDTH_XXNN / 2) << setfill(FILL) << i + 1 << ".";
         clog << setw(WIDTH_XXNN / 2) << setfill(FILL) << size << " ";
         clog << setw(WIDTH_SEAT) << setfill(FILL) << bookSeats.at(i) << endl;
     }

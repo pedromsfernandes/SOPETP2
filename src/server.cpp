@@ -87,22 +87,24 @@ void *thread_func(void *arg)
     vector<int> prefSeats, atrSeats;
     string fifo;
 
-    while (!timeout)
+    while (/*!timeout*/ 1)
     {
         pthread_mutex_lock(&request_mutex);
-        while (req == NULL && !timeout)
+        while (req == NULL) //&& !timeout)
             pthread_cond_wait(&request_cond, &request_mutex);
 
-        if (timeout)
+        /*if (timeout)
         {
             pthread_mutex_unlock(&request_mutex);
             break;
-        }
+        }*/
 
         a_tratar = req;
         req = NULL;
 
         pthread_mutex_unlock(&request_mutex);
+
+        cout << bilhID << "woke\n";
 
         clientPID = a_tratar->getClientPID();
         seats_wanted = a_tratar->getNumWantedSeats();
@@ -110,8 +112,6 @@ void *thread_func(void *arg)
 
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
-
-        cout << fifo << endl;
 
         int error;
 
@@ -121,8 +121,6 @@ void *thread_func(void *arg)
             logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
             pthread_mutex_unlock(&logfile_mutex);
             write(fdAns, &error, sizeof(int));
-
-            cout << "erro" << bilhID << endl;
 
             close(fdAns);
             delete a_tratar;
@@ -139,8 +137,6 @@ void *thread_func(void *arg)
                 atrSeats.push_back(prefSeats[i]);
             }
         }
-
-        cout << "Request tratado por " << bilhID << endl;
 
         if (seats_taken < seats_wanted)
         {
@@ -229,7 +225,7 @@ int main(int argc, char *argv[])
     pid_t clientPID;
     vector<int> prefSeats;
 
-    while (!timeout)
+    while (/*!timeout*/ 1)
     {
         if (read(fdRequests, &clientPID, sizeof(int)) == -1)
         {
