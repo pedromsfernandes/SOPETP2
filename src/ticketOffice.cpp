@@ -20,7 +20,7 @@ Seat::Seat(int seatNum) : seatNum(seatNum)
 void Seat::bookSeat(int clientID)
 {
     this->clientId = clientID;
-    //DELAY();
+    DELAY();
     pthread_mutex_unlock(&seatMutex);
 }
 
@@ -29,11 +29,11 @@ bool Seat::isSeatFree()
     pthread_mutex_lock(&seatMutex);
     if (clientId)
     {
-        //DELAY();
+        DELAY();
         pthread_mutex_unlock(&seatMutex);
         return false;
     }
-    //DELAY();
+    DELAY();
     return true;
 }
 
@@ -41,7 +41,7 @@ void Seat::freeSeat()
 {
     pthread_mutex_lock(&seatMutex);
     clientId = 0;
-    //DELAY();
+    DELAY();
     pthread_mutex_unlock(&seatMutex);
 }
 

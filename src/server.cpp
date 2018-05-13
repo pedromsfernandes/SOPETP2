@@ -83,13 +83,14 @@ void *thread_func(void *arg)
     pthread_mutex_unlock(&logfile_mutex);
     Request *a_tratar;
     pid_t clientPID;
-    int fdAns, seats_wanted, seats_taken;
+    int fdAns, seats_wanted, seats_taken, error;
     vector<int> prefSeats, atrSeats;
     string fifo;
 
     while (!timeout)
     {
         pthread_mutex_lock(&request_mutex);
+
         while (!req && !timeout)
             pthread_cond_wait(&request_cond, &request_mutex);
 
@@ -104,14 +105,17 @@ void *thread_func(void *arg)
 
         pthread_mutex_unlock(&request_mutex);
 
+        atrSeats.clear();
+        prefSeats.clear();
+        seats_taken = 0;
+        error = 0;
+
         clientPID = a_tratar->getClientPID();
         seats_wanted = a_tratar->getNumWantedSeats();
         prefSeats = a_tratar->getPrefSeats();
 
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
-
-        int error;
 
         if ((error = verifyRequest(a_tratar)) < 0)
         {
@@ -121,7 +125,6 @@ void *thread_func(void *arg)
             write(fdAns, &error, sizeof(int));
 
             close(fdAns);
-            atrSeats.clear();
             delete a_tratar;
             continue;
         }
@@ -167,9 +170,7 @@ void *thread_func(void *arg)
         }
 
         close(fdAns);
-        atrSeats.clear();
         delete a_tratar;
-        break;
     }
 
     logTicketOfficeClose(bilhID);
@@ -227,11 +228,15 @@ int main(int argc, char *argv[])
 
     while (!timeout)
     {
-        if (read(fdRequests, &clientPID, sizeof(int)) == -1)
+        int read_size;
+        if ((read_size = read(fdRequests, &clientPID, sizeof(int))) == -1)
         {
             perror("read:");
             return -3;
         }
+
+        if (!read_size)
+            continue;
 
         if (read(fdRequests, &num_seats, sizeof(int)) == -1)
         {
@@ -244,6 +249,8 @@ int main(int argc, char *argv[])
             perror("read:");
             return -3;
         }
+
+        prefSeats.clear();
 
         for (int i = 0; i < size; i++)
         {
