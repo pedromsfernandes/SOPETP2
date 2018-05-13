@@ -131,11 +131,14 @@ int main(int argc, char *argv[])
     }
 
     alarm(time_out);
+    cout << "alarme" << endl;
     if (read(fdAns, &numSeats, sizeof(int)) == -1)
     {
+        cout << "falhou read" << endl;
         perror("read:");
         return -3;
     }
+    cout << "depois do read" << endl;
     alarm(0);
 
     ofstream clog(CLIENT_LOG, ios_base::app);

@@ -104,13 +104,19 @@ void *thread_func(void *arg)
 
         pthread_mutex_unlock(&request_mutex);
 
+        cout << "Request recebido por " << bilhID << endl;
+
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
+
+        cout << "Abrir o fifo " << bilhID << endl;
 
         clientPID = a_tratar->getClientPID();
         seats_wanted = a_tratar->getNumWantedSeats();
         prefSeats = a_tratar->getPrefSeats();
         int error;
+
+        cout << "Get info " << bilhID << endl;
 
         if ((error = verifyRequest(a_tratar)) < 0)
         {
@@ -118,6 +124,8 @@ void *thread_func(void *arg)
             logUnSuccessfulRequest(bilhID, clientPID, prefSeats, error);
             pthread_mutex_unlock(&logfile_mutex);
             write(fdAns, &error, sizeof(int));
+
+            cout << "erro" << bilhID << endl;
 
             close(fdAns);
             delete a_tratar;
@@ -134,6 +142,8 @@ void *thread_func(void *arg)
                 atrSeats.push_back(prefSeats[i]);
             }
         }
+
+        cout << "Request tratado por " << bilhID << endl;
 
         if (seats_taken < seats_wanted)
         {

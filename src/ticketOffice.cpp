@@ -21,7 +21,7 @@ Seat::Seat(int seatNum) : seatNum(seatNum)
 void Seat::bookSeat(int clientID)
 {
     this->clientId = clientID;
-    DELAY();
+    //DELAY();
     pthread_mutex_unlock(&seatMutex);
 }
 
@@ -30,11 +30,11 @@ bool Seat::isSeatFree()
     pthread_mutex_lock(&seatMutex);
     if (clientId)
     {
-        DELAY();
+        //DELAY();
         pthread_mutex_unlock(&seatMutex);
         return false;
     }
-    DELAY();
+    //DELAY();
     return true;
 }
 
@@ -42,7 +42,7 @@ void Seat::freeSeat()
 {
     pthread_mutex_lock(&seatMutex);
     clientId = 0;
-    DELAY();
+    //DELAY();
     pthread_mutex_unlock(&seatMutex);
 }
 
@@ -87,17 +87,17 @@ std::vector<int> Request::getPrefSeats() const
 
 int isSeatFree(Seat *seats, int seatNum)
 {
-    return ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->isSeatFree();
+    return ((Seat *)seats + (seatNum - 1))->isSeatFree();
 }
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
-    ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->bookSeat(clientId);
+    ((Seat *)seats + (seatNum - 1))->bookSeat(clientId);
 }
 
 void freeSeat(Seat *seats, int seatNum)
 {
-    ((Seat *)seats + (seatNum - 1) * sizeof(Seat))->freeSeat();
+    ((Seat *)seats + (seatNum - 1))->freeSeat();
 }
 
 Seat *initSeats(int num_seats)
