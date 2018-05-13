@@ -117,8 +117,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int numSeats;
-
     struct sigaction alarme;
     alarme.sa_handler = sigalarm_handler;
     sigemptyset(&alarme.sa_mask);
@@ -130,8 +128,9 @@ int main(int argc, char *argv[])
         return -4;
     }
 
+    int numSeats;
     alarm(time_out);
-    cout << "alarme" << endl;
+
     if (read(fdAns, &numSeats, sizeof(int)) == -1)
     {
         cout << "falhou read" << endl;

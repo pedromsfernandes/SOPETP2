@@ -104,19 +104,16 @@ void *thread_func(void *arg)
 
         pthread_mutex_unlock(&request_mutex);
 
-        cout << "Request recebido por " << bilhID << endl;
+        clientPID = a_tratar->getClientPID();
+        seats_wanted = a_tratar->getNumWantedSeats();
+        prefSeats = a_tratar->getPrefSeats();
 
         fifo = FIFOname(clientPID);
         fdAns = open(fifo.c_str(), O_WRONLY);
 
-        cout << "Abrir o fifo " << bilhID << endl;
+        cout << fifo << endl;
 
-        clientPID = a_tratar->getClientPID();
-        seats_wanted = a_tratar->getNumWantedSeats();
-        prefSeats = a_tratar->getPrefSeats();
         int error;
-
-        cout << "Get info " << bilhID << endl;
 
         if ((error = verifyRequest(a_tratar)) < 0)
         {
