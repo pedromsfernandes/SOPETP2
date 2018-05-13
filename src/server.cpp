@@ -22,7 +22,7 @@ pthread_mutex_t request_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t logfile_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-Request *req = NULL;
+Request *req = 0;
 
 ofstream slog;
 ofstream sbook;
@@ -87,24 +87,22 @@ void *thread_func(void *arg)
     vector<int> prefSeats, atrSeats;
     string fifo;
 
-    while (/*!timeout*/ 1)
+    while (!timeout)
     {
         pthread_mutex_lock(&request_mutex);
-        while (req == NULL) //&& !timeout)
+        while (!req && !timeout)
             pthread_cond_wait(&request_cond, &request_mutex);
 
-        /*if (timeout)
+        if (timeout)
         {
             pthread_mutex_unlock(&request_mutex);
             break;
-        }*/
+        }
 
         a_tratar = req;
-        req = NULL;
+        req = 0;
 
         pthread_mutex_unlock(&request_mutex);
-
-        cout << bilhID << "woke\n";
 
         clientPID = a_tratar->getClientPID();
         seats_wanted = a_tratar->getNumWantedSeats();
@@ -123,6 +121,7 @@ void *thread_func(void *arg)
             write(fdAns, &error, sizeof(int));
 
             close(fdAns);
+            atrSeats.clear();
             delete a_tratar;
             continue;
         }
@@ -170,6 +169,7 @@ void *thread_func(void *arg)
         close(fdAns);
         atrSeats.clear();
         delete a_tratar;
+        break;
     }
 
     logTicketOfficeClose(bilhID);
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
     pid_t clientPID;
     vector<int> prefSeats;
 
-    while (/*!timeout*/ 1)
+    while (!timeout)
     {
         if (read(fdRequests, &clientPID, sizeof(int)) == -1)
         {
