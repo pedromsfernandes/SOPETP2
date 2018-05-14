@@ -17,9 +17,12 @@ string fifo;
 
 void sigalarm_handler(int signum)
 {
+    ofstream clog(CLIENT_LOG, ios_base::app);
+
+    logUnSuccessfulRequestResult(clog, getpid(), -7);
+
     close(fdAns);
     unlink(fifo.c_str());
-    cout << "Server took too long to respond\n";
     exit(1);
 }
 

@@ -96,6 +96,9 @@ void *thread_func(void *arg)
 
         if (timeout)
         {
+            if (req)
+                continue;
+
             pthread_mutex_unlock(&request_mutex);
             break;
         }
@@ -173,7 +176,10 @@ void *thread_func(void *arg)
         delete a_tratar;
     }
 
+    pthread_mutex_lock(&logfile_mutex);
     logTicketOfficeClose(bilhID);
+    pthread_mutex_unlock(&logfile_mutex);
+
     delete (int *)arg;
     return NULL;
 }
@@ -225,40 +231,26 @@ int main(int argc, char *argv[])
     int num_seats, size, seat;
     pid_t clientPID;
     vector<int> prefSeats;
+    int read_size;
 
     while (!timeout)
     {
-        int read_size;
-        if ((read_size = read(fdRequests, &clientPID, sizeof(int))) == -1)
-        {
-            perror("read:");
-            return -3;
-        }
-
-        if (!read_size)
+        if ((read_size = read(fdRequests, &clientPID, sizeof(int))) <= 0)
             continue;
 
-        if (read(fdRequests, &num_seats, sizeof(int)) == -1)
-        {
-            perror("read:");
-            return -3;
-        }
+        if ((read_size = read(fdRequests, &num_seats, sizeof(int))) <= 0)
+            continue;
 
-        if (read(fdRequests, &size, sizeof(int)) == -1)
-        {
-            perror("read:");
-            return -3;
-        }
+        if ((read_size = read(fdRequests, &size, sizeof(int))) <= 0)
+            continue;
 
         prefSeats.clear();
 
         for (int i = 0; i < size; i++)
         {
-            if (read(fdRequests, &seat, sizeof(int)) == -1)
-            {
-                perror("read:");
-                return -3;
-            }
+            if ((read_size = read(fdRequests, &seat, sizeof(int))) <= 0)
+                continue;
+
             prefSeats.push_back(seat);
         }
 
