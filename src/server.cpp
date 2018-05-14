@@ -282,6 +282,9 @@ int main(int argc, char *argv[])
     logBookedSeats(seats, num_room_seats);
     sbook.close();
 
+    pthread_mutex_destroy(&logfile_mutex);
+    pthread_cond_destroy(&request_cond);
+    pthread_mutex_destroy(&request_mutex);
     delete[] seats;
 
     return 0;

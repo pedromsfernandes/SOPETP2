@@ -14,6 +14,7 @@ private:
 
 public:
   Seat();
+  ~Seat();
   Seat(int seatNum);
   bool isSeatFree();
   void bookSeat(int clientId);

@@ -11,6 +11,11 @@ Seat::Seat()
     seatMutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
+Seat::~Seat()
+{
+    pthread_mutex_destroy(&seatMutex);
+}
+
 Seat::Seat(int seatNum) : seatNum(seatNum)
 {
     clientId = 0;
