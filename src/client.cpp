@@ -89,12 +89,7 @@ int main(int argc, char *argv[])
         return -2;
     }
 
-    struct flock lock;
-    memset(&lock, 0, sizeof(lock));
-    lock.l_type = F_WRLCK;
-    fcntl(fdRequest, F_SETLKW, &lock);
-
-    while (write(fdRequest, &pid, sizeof(int)) < 0)
+    if (write(fdRequest, &pid, sizeof(int)) < 0)
     {
         perror("write:");
         return -3;
@@ -124,9 +119,6 @@ int main(int argc, char *argv[])
         perror("dedicated fifo:");
         return -1;
     }
-
-    lock.l_type = F_UNLCK;
-    fcntl(fdRequest, F_SETLKW, &lock);
 
     struct sigaction alarme;
     alarme.sa_handler = sigalarm_handler;
