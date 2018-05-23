@@ -29,7 +29,7 @@ ofstream sbook;
 
 bool timeout = false;
 
-void sigalarm_handler(int signum)
+void sigalarm_handler(int)
 {
     timeout = true;
 }
@@ -166,10 +166,10 @@ void *thread_func(void *arg)
             logSuccessfulRequest(bilhID, clientPID, prefSeats, atrSeats);
             pthread_mutex_unlock(&logfile_mutex);
 
-            write(fdAns, &seats_wanted, sizeof(int));
+            write(fdAns, &seats_wanted, sizeof(seats_wanted));
 
             for (unsigned int i = 0; i < atrSeats.size(); i++)
-                write(fdAns, &atrSeats[i], sizeof(int));
+                write(fdAns, &atrSeats[i], sizeof(atrSeats[0]));
         }
 
         close(fdAns);

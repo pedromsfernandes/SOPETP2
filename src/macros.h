@@ -14,7 +14,7 @@
 
 #define FILL '0'
 
-#define DELAY() sleep(1);
+#define DELAY() usleep(50000);
 
 #define CLIENT_LOG "clog.txt"
 #define CLIENT_BOOK "cbook.txt"

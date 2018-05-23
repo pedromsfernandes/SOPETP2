@@ -8,8 +8,8 @@ client: client.cpp utils.cpp logClient.cpp
 server: server.cpp utils.cpp ticketOffice.cpp logServer.cpp
 		g++ -o server -Wall -Wextra server.cpp utils.cpp ticketOffice.cpp logServer.cpp -std=c++11 -D_REENTRANT -lpthread -lrt
 
-start: start_v2.c
-	   gcc -o start -Wall -Wextra start_v2.c
+start: start.c
+	   gcc -o start -Wall -Wextra start.c
 
 clean: 
 	rm -f client server start
