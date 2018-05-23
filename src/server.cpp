@@ -235,6 +235,9 @@ int main(int argc, char *argv[])
 
     while (!timeout)
     {
+
+        if((read_size  = read(fdRequest, &request, )
+
         if ((read_size = read(fdRequests, &clientPID, sizeof(int))) <= 0)
             continue;
 

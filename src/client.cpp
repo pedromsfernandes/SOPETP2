@@ -89,30 +89,13 @@ int main(int argc, char *argv[])
         return -2;
     }
 
-    if (write(fdRequest, &pid, sizeof(int)) < 0)
-    {
-        perror("write:");
-        return -3;
-    }
-    if (write(fdRequest, &num_wanted_seats, sizeof(int)) == -1)
-    {
-        perror("write:");
-        return -3;
-    }
+    string str = getRequestString(pid, num_wanted_seats, prefList);
 
-    int size = prefList.size();
-    if (write(fdRequest, &size, sizeof(int)) == -1)
+    if (write(fdRequest, str.c_str(), strlen(str.c_str())) == -1)
     {
         perror("write:");
         return -3;
     }
-
-    for (auto &x : prefList)
-        if (write(fdRequest, &x, sizeof(int)) == -1)
-        {
-            perror("write:");
-            return -3;
-        }
 
     if ((fdAns = open(fifo.c_str(), O_RDONLY)) == -1)
     {

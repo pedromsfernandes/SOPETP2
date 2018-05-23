@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "utils.h"
 
 using namespace std;
@@ -90,4 +91,46 @@ string getCode(int motive)
 string FIFOname(pid_t pid)
 {
     return "ans" + to_string(pid);
+}
+
+string getRequestString(pid_t pid, int num_wanted_seats, const vector<int> &prefSeats)
+{
+    string request;
+    char attrSep = '|', seatSep = '-';
+    int size = prefSeats.size();
+
+    request += to_string(pid) + attrSep + to_string(num_wanted_seats) + attrSep + to_string(size) + attrSep;
+
+    for (int i = 0; i < size; i++)
+    {
+        if (i > 0)
+            request += seatSep;
+
+        request += to_string(prefSeats.at(i));
+    }
+
+    return request;
+}
+
+Request *parseRequestString(const std::string request)
+{
+    istringstream str(request);
+    int num_wanted_seats, size;
+    pid_t clientPID;
+    vector<int> prefSeats;
+    int seat = 0;
+    char sep;
+
+    str >> clientPID >> sep >> num_wanted_seats >> sep >> size >> sep;
+
+    for (int i = 0; i < size; i++)
+    {
+        if (i > 0)
+            str >> sep;
+        str >> seat;
+
+        prefSeats.push_back(seat);
+    }
+
+    return new Request(clientPID, num_wanted_seats, prefSeats);
 }
