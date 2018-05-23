@@ -228,36 +228,19 @@ int main(int argc, char *argv[])
     int fdRequests;
     fdRequests = open(REQUESTS, O_RDONLY);
 
-    int num_seats, size, seat;
-    pid_t clientPID;
     vector<int> prefSeats;
     int read_size;
 
     while (!timeout)
     {
+        char *request = (char *)malloc(MAX_REQUEST_SIZE);
 
-        if((read_size  = read(fdRequest, &request, )
-
-        if ((read_size = read(fdRequests, &clientPID, sizeof(int))) <= 0)
-            continue;
-
-        if ((read_size = read(fdRequests, &num_seats, sizeof(int))) <= 0)
-            continue;
-
-        if ((read_size = read(fdRequests, &size, sizeof(int))) <= 0)
+        if ((read_size = read(fdRequests, request, MAX_REQUEST_SIZE - 1))<=0)
             continue;
 
         prefSeats.clear();
 
-        for (int i = 0; i < size; i++)
-        {
-            if ((read_size = read(fdRequests, &seat, sizeof(int))) <= 0)
-                continue;
-
-            prefSeats.push_back(seat);
-        }
-
-        Request *temp_req = new Request(clientPID, num_seats, prefSeats);
+        Request *temp_req = parseRequestString(request);
 
         pthread_mutex_lock(&request_mutex);
         req = temp_req;

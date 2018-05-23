@@ -23,5 +23,6 @@
 #define REQUESTS "requests"
 
 #define SHARED 0
+#define MAX_REQUEST_SIZE 500
 
 #endif /* _MACROS_H_ */

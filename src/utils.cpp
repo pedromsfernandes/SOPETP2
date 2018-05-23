@@ -109,6 +109,8 @@ string getRequestString(pid_t pid, int num_wanted_seats, const vector<int> &pref
         request += to_string(prefSeats.at(i));
     }
 
+    request+='\n';
+ 
     return request;
 }
 
